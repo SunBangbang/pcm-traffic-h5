@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="never">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
+    <meta http-equiv="Cache-Control" content="no-cache,    no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>
+        <%= htmlWebpackPlugin.options.title %>
+    </title>
+    <style>
+        html,
+        body,
+        #app {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        * ::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        /* 滚动条 */
+        @keyframes rotate-360 {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes rotate-n360 {
+            from {
+                transform: rotate(360deg);
+            }
+
+            to {
+                transform: rotate(0deg);
+            }
+        }
+    </style>
+    <script>
+        //     /**
+        //   * 加载 Loading
+        //   * 请求失败，默认使用 htmlConfig 数据
+        //   **/
+        //     let htmlConfig = {
+        //         bg: '#2B2C30',
+        //         opacity: 100,
+        //         src: '',
+        //         text: 'Loadding...',
+        //         textColor: '#fff',
+        //         textMt: '10'
+        //     }
+
+        //     if (htmlConfig.src) {
+        //         document.write('<div id="loadingApp" style="position:absolute;left:0;width:100%;height:100%;top:0;background:' + htmlConfig.bg + ';opacity:' + htmlConfig.opacity / 100 + ';z-index:10000;">' +
+        //             '<div style="height: 100%;display: flex;flex-flow: column;align-items: center;justify-content: center;">' +
+        //             '<img src="' + htmlConfig.src + '"/>' +
+        //             '<div style="color: ' + htmlConfig.textColor + ';margin-top:' + htmlConfig.textMt + 'px">' + htmlConfig.text + '</div>' +
+        //             '</div></div>');
+        //     } else {
+        //         document.write('<div id="loadingApp" style="position:absolute;left:0;width:100%;height:100%;top:0;background:' + htmlConfig.bg + ';opacity:' + htmlConfig.opacity / 100 + ';z-index:10000;">' +
+        //             '<div style="height: 100%;display: flex;flex-flow: column;align-items: center;justify-content: center;">' +
+        //             '<svg width="50px" height="50px">' +
+        //             '<circle style="transform-origin: center;animation: rotate-360 1.2s linear infinite;" cx="25" cy="25" r="20" fill="transparent" stroke-width="3" stroke-dasharray="31.415, 31.415" stroke="#02bcfe" stroke-linecap="round" />' +
+        //             '<circle style="transform-origin: center;animation: rotate-n360 1.2s linear infinite;" cx="25" cy="25" r="10" fill="transparent" stroke-width="3" stroke-dasharray="15.7, 15.7" stroke="#3be6cb" stroke-linecap="round" />' +
+        //             '</svg>' +
+        //             '<div style="color: ' + htmlConfig.textColor + ';margin-top:' + htmlConfig.textMt + 'px">' + htmlConfig.text + '</div>' +
+        //             '</div></div>');
+        //     }
+        //     document.onreadystatechange = function () {
+        //         if (document.readyState == "complete") {
+        //             let loadingMask = document.getElementById("loadingApp");
+        //             loadingMask.parentNode.removeChild(loadingMask);
+        //         }
+        //     }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.documentElement.style.fontSize = document.documentElement.clientWidth / 20 + 'px'
+        })
+        var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') || CSS.supports('top: constant(a)'))
+        document.write('<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' + (coverSupport ? ', viewport-fit=cover' : '') + '" />')
+    </script>
+    <link rel="stylesheet" href="<%= BASE_URL %>static/index.<%= VUE_APP_INDEX_CSS_HASH %>.css" />
+    <script type="text/javascript">
+        window.iPortal = {
+            "sudyInitCallback": (function () {
+                var init = false;
+                return function (context) {
+                    if (init) {
+                        return init;
+                    }
+                    init = true;
+                    window.iPortal.context = context;
+                    var script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = context.libPath;
+                    document.getElementsByTagName("head")[0].appendChild(script);
+                    return init;
+                };
+            })()
+        };
+        var iPortalInited = false;
+        var debug = true;
+        //初始化
+        var myInit = function (succeeded) {
+            //执行初始化
+            iPortalInited = succeeded;
+            // if(debug && !succeeded){
+            //    //调试用
+            //    alert("iPortal初始化失败");
+            // }
+        };
+        if (!iPortal.isReady) {
+            iPortal.onReady = myInit; //挂载初始化回调函数
+        } else {
+            myInit();
+        }
+    </script>
+</head>
+
+<body>
+    <noscript>
+        <!-- <strong>Please enable JavaScript to continue.</strong> -->
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+</body>
+
+</html>

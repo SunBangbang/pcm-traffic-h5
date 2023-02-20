@@ -1,0 +1,96 @@
+# 当产生提交或 tag 时创建这个 pipeline
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH
+
+# pipeline 步骤
+stages:
+  - build
+  - deploy
+
+# 全局变量
+variables:
+  CONTAINER_IMAGE: $CI_REGISTRY/$CI_PROJECT_PATH
+
+# 登录 container registry
+.login_container_registry: &login_container_registry
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# 规则：提交或合并到默认分支
+.commit_to_master: &if_default_branch
+  rules:
+    - if: "$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+
+# 规则：创建 tag
+.tag_master: &if_tag
+  rules:
+    - if: "$CI_COMMIT_TAG != null"
+
+# 部署到某环境
+.deploy: &deploy
+  script:
+    - *login_container_registry
+    - docker pull $CONTAINER_IMAGE:$SPECIFIC_DOCKER_TAG
+    - docker stop $CI_PROJECT_NAME || true
+    - docker rm $CI_PROJECT_NAME || true
+    - docker run -d $SPECIFIC_ENV $PROJECT_EXPOSE_PORTS $PROJECT_VOLUME --name $CI_PROJECT_NAME $CONTAINER_IMAGE:$SPECIFIC_DOCKER_TAG
+
+# 当 master 上产生一个提交时，构建一个以提交 SHA 值为 tag 的镜像，并推送到 container registry
+build:
+  stage: build
+  tags:
+    - shared
+  script:
+    - *login_container_registry
+    - docker build -t $CONTAINER_IMAGE:latest .
+    - docker push $CONTAINER_IMAGE:latest
+  <<: *if_default_branch
+
+# 当在 master 上打一个 tag 时，拉取最新的镜像，并打上和 master 上相同的 tag，并推送到 container registry
+build_tag:
+  stage: build
+  tags:
+    - shared
+  script:
+    - *login_container_registry
+    - docker pull $CONTAINER_IMAGE:latest
+    - docker tag $CONTAINER_IMAGE:latest $CONTAINER_IMAGE:$CI_COMMIT_TAG
+    - docker push $CONTAINER_IMAGE:$CI_COMMIT_TAG
+  <<: *if_tag
+
+# 拉取最新到镜像，并运行在开发服务器
+deploy_to_dev_env:
+  stage: deploy
+  tags:
+    # 开发环境服务器 runner
+    - dev-env
+  variables:
+    SPECIFIC_DOCKER_TAG: latest
+    SPECIFIC_ENV: $PROJECT_PROFILE_DEV
+  <<: *deploy
+  <<: *if_default_branch
+
+# 拉取指定 tag 的镜像，并运行在测试服务器
+deploy_to_test_env:
+  stage: deploy
+  tags:
+    # 测试环境服务器 runner
+    - test-env
+  variables:
+    SPECIFIC_DOCKER_TAG: $CI_COMMIT_TAG
+    SPECIFIC_ENV: $PROJECT_PROFILE_TEST
+  <<: *deploy
+  <<: *if_tag
+
+# 拉取指定 tag 的镜像，并运行在测试服务器 2
+deploy_to_test_env_2:
+  stage: deploy
+  tags:
+    # 测试环境服务器 runner
+    - test-env-2
+  variables:
+    SPECIFIC_DOCKER_TAG: $CI_COMMIT_TAG
+    SPECIFIC_ENV: $PROJECT_PROFILE_TEST_2
+  <<: *deploy
+  <<: *if_tag
